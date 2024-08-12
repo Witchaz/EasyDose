@@ -8,7 +8,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { ScrollView } from "react-native-gesture-handler";
 import PagerView from "react-native-pager-view";
 import { Image } from "expo-image";
-import { router } from 'expo-router';
+import { router } from "expo-router";
 import { Pressable } from "react-native";
 
 export default function TabTwoScreen() {
@@ -16,12 +16,11 @@ export default function TabTwoScreen() {
     <ThemedView style={styles.header}>
       <ThemedText style={styles.title}>Upload image</ThemedText>
       <Pressable style={styles.button} onPress={() => router.push("/camera")}>
-        <ThemedText type="link"> Open camera</ThemedText>
+        <ThemedText type="link">Open camera</ThemedText>
       </Pressable>
     </ThemedView>
   );
 }
-
 
 const styles = StyleSheet.create({
   headerImage: {
@@ -56,8 +55,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 12,
-    paddingHorizontal : 10,
-    paddingVertical : 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 4,
     elevation: 3,
     backgroundColor: "white",
