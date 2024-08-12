@@ -47,17 +47,18 @@ export default function CameraScreen() {
     }
   }
 
-  async function saveToServer(base64Photo: string) {
+  async function sendToServer(base64Photo: string) {
     const formBody = `image=${encodeURIComponent(base64Photo)}`;
-
+    
     try {
-      await fetch("http://26.241.103.91:3000/", {
+      return await fetch("https://easydose-server-agipda2psa-as.a.run.app/ocr", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         },
         body: formBody,
-      });
+      }).then(response => response.json());
+      
     } catch (error) {
       console.error("Error saving photo to server:", error);
     }
@@ -78,7 +79,8 @@ export default function CameraScreen() {
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              saveToServer(photo.replace("data:image/jpg;base64,", ""));
+              var response = sendToServer(photo.replace("data:image/jpg;base64,", ""));
+              console.log(response);
               setPhoto(null);
             }}
           >
@@ -90,7 +92,7 @@ export default function CameraScreen() {
           style={camera.camera}
           facing={facing}
           ref={cameraRef}
-          onTouchEnd={toggleCameraFacing}
+          // onTouchEnd={toggleCameraFacing}
         >
           <View style={camera.buttonContainer}>
             <TouchableOpacity
