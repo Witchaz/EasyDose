@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Pressable, Image } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image, ActivityIndicator } from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { Button, TouchableOpacity } from "react-native";
 
@@ -8,13 +8,13 @@ export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const [photo, setPhoto] = useState<string | null>(null);
-
+  const [responseText, setResponseText] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   if (!permission) {
     return <View />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet.
     return (
       <View style={styles.container}>
         <Text style={camera.message}>
@@ -48,16 +48,23 @@ export default function CameraScreen() {
   }
 
   async function sendToServer(base64Photo: string) {
-    const formBody = `image=${encodeURIComponent(base64Photo)}`;
+    const formBody = {
+      image_base64: base64Photo,
+    };
     
     try {
-      return await fetch("https://easydose-server-agipda2psa-as.a.run.app/ocr", {
+      const res = await fetch("https://easydose-server-agipda2psa-as.a.run.app/ocr", {
+      // const res = await fetch("http://127.0.0.1:5000/", {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          accept: "application/json",
+          "Content-Type": "application/json",
         },
-        body: formBody,
-      }).then(response => response.json());
+        body: JSON.stringify(formBody),
+      });
+      const rs = await res.json();
+      setResponseText(JSON.stringify(rs, null, 2)); // Update state with response
+      return rs;
       
     } catch (error) {
       console.error("Error saving photo to server:", error);
@@ -76,23 +83,28 @@ export default function CameraScreen() {
             <Text style={styles.text}>Retake</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <TouchableOpacity
             style={styles.button}
-            onPress={() => {
-              var response = sendToServer(photo.replace("data:image/jpg;base64,", ""));
-              console.log(response);
+            onPress={async () => {
+              setLoading(true);
+              const response = await sendToServer(photo.replace("data:image/jpg;base64,", ""));
+              setLoading(false);
               setPhoto(null);
             }}
           >
             <Text style={styles.text}>Save</Text>
           </TouchableOpacity>
+      )}
+          
         </View>
       ) : (
         <CameraView
           style={camera.camera}
           facing={facing}
           ref={cameraRef}
-          // onTouchEnd={toggleCameraFacing}
         >
           <View style={camera.buttonContainer}>
             <TouchableOpacity
@@ -103,6 +115,11 @@ export default function CameraScreen() {
             </TouchableOpacity>
           </View>
         </CameraView>
+      )}
+      {responseText && (
+        <View style={styles.responseContainer}>
+          <Text style={styles.responseText}>{responseText.replaceAll("\n", " ")}</Text>
+        </View>
       )}
     </View>
   );
@@ -140,6 +157,14 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "80%",
+  },
+  responseContainer: {
+    padding: 20,
+    backgroundColor: "#f0f0f0",
+  },
+  responseText: {
+    fontSize: 16,
+    color: "#333",
   },
 });
 
